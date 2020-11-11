@@ -1,0 +1,6 @@
+{
+  "name": "Health-URL-Check",
+  "version": "1.0",
+  "description": "Build an Extension for Health-URL-Check",
+  "manifest_version": 2
+}
