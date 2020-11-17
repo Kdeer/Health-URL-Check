@@ -11,7 +11,19 @@
   ],
   "page_action": {
     "default_title": "Build an Extension for Health-URL-Check",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/juice16.png",
+      "32": "images/juice32.png",
+      "48": "images/juice48.png",
+      "128": "images/juice128.png"
+    }
+  },
+  "icons": {
+    "16": "images/juice16.png",
+    "32": "images/juice32.png",
+    "48": "images/juice48.png",
+    "128": "images/juice128.png"
   },
   "background": {
     "scripts": ["background.js"],
