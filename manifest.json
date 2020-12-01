@@ -2,7 +2,7 @@
   "name": "Health-URL-Check",
   "version": "1.0",
   "description": "Build an Extension for Health-URL-Check",
-  "permissions": ["storage", "declarativeContent"],
+  "permissions": ["storage", "declarativeContent", "unlimitedStorage"],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
@@ -29,5 +29,8 @@
     "scripts": ["background.js"],
     "persistent": false
   },
-  "manifest_version": 2
+  "manifest_version": 2,
+  "web_accessible_resources": [
+    "data/security_urls.json"
+  ]
 }
