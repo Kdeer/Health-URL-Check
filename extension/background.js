@@ -20,6 +20,7 @@ chrome.runtime.onInstalled.addListener(() => {
     const url = chrome.runtime.getURL("data/security_urls.json");
     fetch(url)
         .then(response => {
+            response.redirected
             return response.json();
         })
         .then(json => {
@@ -40,4 +41,3 @@ chrome.runtime.onInstalled.addListener(() => {
         console.log("The color is green");
     });
 });
-
