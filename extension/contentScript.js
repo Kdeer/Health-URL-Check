@@ -246,6 +246,240 @@ class FeatureGetter {
         }
     }
 
+    /**
+     * 从外部域加载Favicon -> -1
+     * 否则 -> 1
+     * @param dom
+     * @param url
+     * @returns {number}
+     */
+    function10(dom, url) {
+        if (dom == null) {
+            return 1;
+        }
+        const links = document.head.getElementsByTagName("link")
+        const urlObj = new URL(url);
+        for (let i = 0; i < links.length; i++) {
+            if (links.item(i).rel.indexOf("icon") >= 0 && new URL(links.item(i).href).host !== urlObj.host) {
+                return -1;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * [21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3389]
+     * port属于首选端口 -> 1
+     * 否则 -> 1
+     * @param url
+     */
+    function11(url) {
+        const urlObj = new URL(url);
+        if ("21-22-23-80-443-445-1433-1521-3306-3389".indexOf(urlObj.port) >= 0) {
+            return 1;
+        }
+        return -1;
+    }
+
+    /**
+     * url域名中出现http -> -1
+     * 否则 -> 1
+     * @param url
+     * @returns {number}
+     */
+    function12(url) {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.indexOf("http")) {
+            return -1;
+        }
+        return 1;
+    }
+
+    /**
+     * 外部对象（img, video, audio）中外链的占比
+     * [0, 22%) -> 1
+     * [22%, 61%) -> 0
+     * [61%, 100%] -> -1
+     * @param dom
+     * @param url
+     * @returns {number}
+     */
+    function13(dom, url) {
+        if (dom == null)
+            return 1;
+        let totalNum = 0;
+        let outLinksNum = 0;
+        const imgs = dom.getElementsByTagName("img");
+        totalNum += imgs.length;
+        const videos = dom.getElementsByTagName("video");
+        totalNum += videos.length;
+        const audios = dom.getElementsByTagName("audio");
+        totalNum += audios.length;
+
+        for (let i = 0; i < imgs.length; i++) {
+            try {
+                if (!this.checkIsSameOrigin(imgs.item(i).src, url)) {
+                    outLinksNum++;
+                }
+            } catch (err) {
+
+            }
+        }
+        const rate = outLinksNum / totalNum;
+        if (rate < 0.22)
+            return 1;
+        else if (rate < 0.61)
+            return 0;
+        else
+            return -1;
+    }
+
+    /**
+     * 所有a标签中，控标签的占比
+     * [0, 31%) => 1
+     * [31%, 67%) => 0
+     * [67%, 100%] => -1
+     * @param dom
+     * @returns {number}
+     */
+    function14(dom) {
+        if (dom == null)
+            return 1;
+        const aElements = dom.getElementsByTagName("a");
+        let anchorNum = 0;
+        for (let i = 0; i < aElements.length; i++) {
+            if (aElements.item(i).href === "javascript:void(0)") {
+                anchorNum++;
+            }
+        }
+        const rate = anchorNum / aElements.length;
+        if (rate < 0.31)
+            return 1;
+        else if (rate < 0.67)
+            return 0;
+        else
+            return -1;
+    }
+
+    /**
+     * <script>、<link>中包含的外链的比例
+     * [0, 17%) => 1
+     * [17%, 81%) => 0
+     * [81%, 100%] => -1
+     * @param dom
+     * @param url
+     * @returns {number}
+     */
+    function15(dom, url) {
+        if (dom == null)
+            return 1;
+        try {
+            const scriptElements = dom.getElementsByTagName("script");
+            const linkElements = dom.getElementsByTagName("link");
+            const totalNum = scriptElements.length + linkElements.length;
+            let outLinkNum = 0;
+            for (let i = 0; i < scriptElements.length; i++) {
+                if (!this.checkIsSameOrigin(scriptElements.item(i).src, url))
+                    outLinkNum++;
+            }
+            for (let i = 0; i < linkElements.length; i++) {
+                if (!this.checkIsSameOrigin(linkElements.item(i).href, url))
+                    outLinkNum++;
+            }
+            const rate = outLinkNum / totalNum;
+            if (rate < 0.17) {
+                return 1;
+            } else if (rate < 0.81) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } catch (err) {
+            return 1;
+        }
+    }
+
+    /**
+     * SHF is "about:blank" or "" => -1
+     * SFH is not same origin => 0
+     * else => -1
+     * @param dom
+     * @param url
+     * @returns {number}
+     */
+    function16(dom, url) {
+        if (dom == null)
+            return 1;
+        const forms = dom.getElementsByTagName("form");
+        for (let i = 0; i < forms.length; i++) {
+            if ("about:blank".indexOf(forms.item(i).action) >= 0) {
+                return -1;
+            } else if (!this.checkIsSameOrigin(forms.item(i).action, url)) {
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Use history.putState to change display of url => -1
+     * else => 1
+     * @param dom
+     * @returns {number}
+     */
+    function20(dom) {
+        if (dom == null)
+            return 1;
+        const scripts = dom.getElementsByTagName("script");
+        for (let i = 0; i < scripts.length; i++) {
+            if (scripts.item(i).innerHTML.indexOf("history.putState") > 0)
+                return -1;
+        }
+        return 1;
+    }
+
+    /**
+     * 禁用右键单击 => -1
+     * else => 1
+     * @param dom
+     * @returns {number}
+     */
+    function21(dom) {
+        if (dom == null)
+            return 1;
+        const scripts = dom.getElementsByTagName("script");
+        for (let i = 0; i < scripts.length; i++) {
+            if (scripts.item(i).innerHTML.indexOf("event.button == 2") > 0 &&
+                scripts.item(i).innerHTML.indexOf("false"))
+                return -1;
+        }
+        return 1;
+    }
+
+    /**
+     * 弹出窗口包含文本字段 => -1
+     * else => 1
+     * @param dom
+     */
+    function22(dom) {
+        return 1;
+    }
+
+    /**
+     * Use iframe => -1
+     * else => 1
+     * @param dom
+     * @returns {number}
+     */
+    function23(dom) {
+        if (dom == null)
+            return 1;
+        if (dom.getElementsByTagName("iframe").length > 0) {
+            return -1;
+        }
+        return 1;
+    }
+
     run() {
         return fetch(this.url, {
             'mode': 'no-cors'
@@ -269,6 +503,16 @@ class FeatureGetter {
                     feature5: this.function5(this.url),
                     feature6: this.function6(this.url),
                     feature7: this.function7(this.url),
+                    feature10: this.function10(this.dom, this.url),
+                    feature11: this.function11(this.url),
+                    feature12: this.function12(this.url),
+                    feature13: this.function13(this.dom, this.url),
+                    feature14: this.function14(this.dom),
+                    feature15: this.function15(this.dom, this.url),
+                    feature16: this.function16(this.dom, this.url),
+                    feature20: this.function20(this.dom),
+                    feature21: this.function21(this.dom),
+                    feature23: this.function23(this.dom),
                 });
             })
             .catch(err => {
@@ -279,9 +523,9 @@ class FeatureGetter {
                     feature5: this.function5(this.url),
                     feature6: this.function6(this.url),
                     feature7: this.function7(this.url),
+                    feature11: this.function11(this.url),
+                    feature12: this.function12(this.url),
                 });
             });
     }
 }
-
-module.exports = FeatureGetter
