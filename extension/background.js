@@ -27,17 +27,8 @@ chrome.runtime.onInstalled.addListener(() => {
             chrome.storage.local.set(json, () => {
                 console.log("save successful");
             });
-            chrome.storage.local.set({"fuck": false, "fuck1": true}, () => {
-                console.log("aaaa");
-            });
         })
         .catch(err => {
-            chrome.storage.local.set({"fuck": err.message}, () => {
-                console.log(err);
-            })
+            console.log(err);
         });
-
-    chrome.storage.local.set({color: "#3aa757"}, () => {
-        console.log("The color is green");
-    });
 });

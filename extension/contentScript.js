@@ -68,8 +68,6 @@ async function asyncFilter(arr, predicate) {
                 element: item,
                 url: item.href
             });
-        } else {
-            console.log(item.href);
         }
     }
     for (let key in requestData) {
@@ -99,22 +97,14 @@ async function asyncFilter(arr, predicate) {
     const promises = [];
     tmpObj.forEach(item => {
         const url = item.url;
-        // chrome.runtime.sendMessage({
-        //     type: 0,
-        //     data: url
-        // }, response => {
-        //    console.log(response);
-        // });
         promises.push(
             new FeatureGetter(url)
                 .run()
                 .then(res => {
                     item.features = res;
-                    console.log(url, " => ", res);
                 })
                 .catch(err => {
                     item.features = {};
-                    console.log(url, " => ", err.message);
                 })
         );
     });
@@ -145,6 +135,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.1.	Using the IP Address
+     *
      * 如果用IP地址代替URL中的域名，如“http://125.98.3.123/fake.html”，则判断为钓鱼网站。注意：IP地址甚至转换为十六进制代码，如：http://0x58.0xCC.0xCA.0x62/2/paypal.ca/index.html
      */
     function1(url) {
@@ -160,6 +152,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.2.	Long URL to Hide the Suspicious Part
+     *
      * 如果URL的长度大于或等于54个字符，则该URL被归类为网络钓鱼
      */
     function2(url) {
@@ -172,6 +166,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.3.	Using URL Shortening Services “TinyURL”
+     *
      * 短网址（http重定向） -> -1
      * 否则 -> 1
      * @param response
@@ -184,6 +180,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.4.	URL’s having “@” Symbol
+     *
      * url包含@ -> -1
      * 否则 -> 1
      * @param url
@@ -197,6 +195,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.5.	Redirecting using “//”
+     *
      * url中最后一次出现//的位置 > 7 -> -1
      * 否则 -> 1
      * @param url
@@ -210,6 +210,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.6.	Adding Prefix or Suffix Separated by (-) to the Domain
+     *
      * 域名部分包含 - 符号 -> -1
      * 否则 -> 1
      * @param url
@@ -224,6 +226,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.7.	Sub Domain and Multi Sub Domains
+     *
      * url中忽略 www 和 ccTLD之后，剩余部分：
      * 包含"."的个数 <= 1 -> 1
      * 包含"."的个数 = 2 -> 0
@@ -247,6 +251,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.10.	Favicon
+     *
      * 从外部域加载Favicon -> -1
      * 否则 -> 1
      * @param dom
@@ -268,6 +274,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.11.	Using Non-Standard Port
+     *
      * [21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3389]
      * port属于首选端口 -> 1
      * 否则 -> 1
@@ -282,6 +290,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.1.12.	The Existence of “HTTPS” Token in the Domain Part of the URL
+     *
      * url域名中出现http -> -1
      * 否则 -> 1
      * @param url
@@ -296,6 +306,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.2.1. Request URL
+     *
      * 外部对象（img, video, audio）中外链的占比
      * [0, 22%) -> 1
      * [22%, 61%) -> 0
@@ -335,7 +347,9 @@ class FeatureGetter {
     }
 
     /**
-     * 所有a标签中，控标签的占比
+     * 1.2.2. URL of Anchor
+     *
+     * 所有a标签中，空标签的占比
      * [0, 31%) => 1
      * [31%, 67%) => 0
      * [67%, 100%] => -1
@@ -362,6 +376,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.2.3. Links in <Meta>, <Script> and <Link> tags
+     *
      * <script>、<link>中包含的外链的比例
      * [0, 17%) => 1
      * [17%, 81%) => 0
@@ -400,6 +416,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.2.4. Server Form Handler (SFH)
+     *
      * SHF is "about:blank" or "" => -1
      * SFH is not same origin => 0
      * else => -1
@@ -422,6 +440,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.3.2. Status Bar Customization
+     *
      * Use history.putState to change display of url => -1
      * else => 1
      * @param dom
@@ -439,6 +459,8 @@ class FeatureGetter {
     }
 
     /**
+     * 1.3.3. Disabling Right Click
+     *
      * 禁用右键单击 => -1
      * else => 1
      * @param dom
@@ -457,15 +479,8 @@ class FeatureGetter {
     }
 
     /**
-     * 弹出窗口包含文本字段 => -1
-     * else => 1
-     * @param dom
-     */
-    function22(dom) {
-        return 1;
-    }
-
-    /**
+     * 1.3.5. IFrame Redirection
+     *
      * Use iframe => -1
      * else => 1
      * @param dom
