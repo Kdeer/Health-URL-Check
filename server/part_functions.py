@@ -4,6 +4,36 @@ import re
 import csv
 import time
 import random
+from urllib.parse import urlparse, parse_qs, parse_qsl
+
+
+class FeatureGetter:
+    def __init__(self, url):
+        self.url = url
+
+    def run(self):
+        requests.get(self.url)
+
+    def checkIsSameOrigin(self, url1, url2):
+        obj1, obj2 = urlparse(url1), urlparse(url2)
+        return obj1.hostname == obj2.hostname
+
+    def function3(self, url, response):
+        """
+        1.1.3.	Using URL Shortening Services “TinyURL”
+
+        - 短网址（http重定向） -> -1
+        - 否则 -> 1
+        :param url:
+        :param response:
+        :return:
+        """
+        if len(url) < 20 and response.is_redirect:
+            return -1
+        return 1
+
+    def function10(self, dom, url):
+
 
 '''
 1.3.1 Website Forwarding
@@ -11,6 +41,7 @@ If the redirect page number is <= 1 -> legitmate => 1
 If the redirect page is >= 2 and < 4 -> suspicious => 0
 otherwise -> phishing => -1
 '''
+
 
 # not tested yet
 def web_forward(url):
@@ -23,9 +54,6 @@ def web_forward(url):
 link = "www.wego-club.com"
 web_forward(link)
 
-
-
-
 '''
 1.4.7 Statistical reports based feature
 Something need to be changed
@@ -33,6 +61,8 @@ Something need to be changed
 if host is found in google safe browse api or aa419 -> phising => -1
 otherwise -> legitmate => 1
 '''
+
+
 def statistical_report(url):
     url_list = []
     url_list.append({"url": url})
@@ -43,7 +73,8 @@ def statistical_report(url):
             "clientVersion": "1.5.2"
         },
         "threatInfo": {
-            "threatTypes": ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING","UNWANTED_SOFTWARE","POTENTIALLY_HARMFUL_APPLICATION"],
+            "threatTypes": ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE",
+                            "POTENTIALLY_HARMFUL_APPLICATION"],
             "platformTypes": ["ALL_PLATFORMS"],
             "threatEntryTypes": ["URL"],
             "threatEntries": url_list
@@ -52,16 +83,15 @@ def statistical_report(url):
     api_key = "enter the api"
     headers = {'Content-type': 'application/json'}
     r = requests.post('https://safebrowsing.googleapis.com/v4/threatMatches:find?', data=data,
-        params={'key': "enter the api"},
-        headers=headers
-    )
+                      params={'key': "enter the api"},
+                      headers=headers
+                      )
 
     result = r.json()
     print(len(result), result)
 
     if len(result) > 0:
         return -1
-
 
     aa419_url = "https://db.aa419.org/fakebankslist.php"
     aa419_session = requests.Session()
@@ -81,7 +111,6 @@ def statistical_report(url):
 # statistical_report("www.wego-club.com")
 
 
-
 '''
 1.4.6 Number of Links Pointing to Page
 if link pointing to the webpage = 0 -> phising => -1
@@ -91,6 +120,7 @@ otherwise -> legitimate => 1
 problem: google's link operator is deprecated
 https://www.openlinkprofiler.org/  is used as an alternative solution
 '''
+
 
 def pointing_links(link):
     if "https://" in link:
@@ -108,7 +138,6 @@ def pointing_links(link):
     print(response.text)
 
 
-
 '''
 1.4.5 Google Index, test whether the url is in google's index
 if in the google index -> legitimate => 1
@@ -119,10 +148,12 @@ usage: https://www.geeksforgeeks.org/performing-google-search-using-python-code/
 '''
 
 from googlesearch import search
+
+
 def google_index(link):
     result = -1
 
-    query = "site:"+link
+    query = "site:" + link
     index_list = search(query, tld="co.in", num=1, stop=1, pause=2)
 
     for x in index_list:
@@ -146,17 +177,15 @@ otherwise legitimate => 1
 Difficult to find the source to determine the page rank, will hold for now
 '''
 
-
-
-
 '''
 1.4.3 Website Traffic, use the rank from Alexa.com 
 if website Rank < 100,000 -> legitimate => 1
 if website rank > 100,000 -> suspicious => 0
 otherwise -> phish => -1
 '''
-def website_rank(link):
 
+
+def website_rank(link):
     result = -1
     if "https://" in link:
         link = link[8:]
@@ -189,11 +218,8 @@ def website_rank(link):
     return result
 
 
-
 # link = "wego-club.com"
 # website_rank(link)
-
-
 
 
 '''
@@ -201,6 +227,8 @@ def website_rank(link):
 if mail() or mailto: function exists => phishing => -1
 if not => legitimate => 1
 '''
+
+
 def mail_func(link):
     s = requests.Session()
     response = s.get(link)
@@ -210,12 +238,10 @@ def mail_func(link):
             print(mail_result.group())
             return -1
 
-
     return 1
 
 
 # mail_func("https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_link_mailto")
-
 
 
 '''
@@ -242,8 +268,9 @@ https://www.expireddomains.net/faq/#:~:text=If%20you%20register%20a%20Deleted,an
 '''
 import whois
 import datetime
-def domain_reg_len(link):
 
+
+def domain_reg_len(link):
     try:
 
         response = whois.whois(link)
@@ -306,7 +333,6 @@ def domain_reg_len(link):
 # domain_reg_len('www.stackoverflow.com')
 
 
-
 '''
 1.1.8 HTTPS 
 Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
@@ -318,6 +344,7 @@ otherwise => phising => -1
 import socket
 import certifi
 
+
 def verify_cert(link):
     s = requests.Session()
     if "http" not in link:
@@ -328,7 +355,7 @@ def verify_cert(link):
     print(link)
 
     try:
-        resposne = s.get(link,  verify=certifi.where(), timeout=3)
+        resposne = s.get(link, verify=certifi.where(), timeout=3)
         if resposne.status_code:
             return 1
     except requests.exceptions.SSLError:
