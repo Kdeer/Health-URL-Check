@@ -37,7 +37,7 @@ def check_url():
         "code": 0,
         "msg": "",
         "data": {
-            "security": True
+            "security": False
         }
     }
     response = jsonify(result)
