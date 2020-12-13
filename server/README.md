@@ -3,7 +3,7 @@
 - **Run server**
     - require
         ```bash
-        pip3 install Flask
+        pip3 install Flask flask_cors
         ```
     - run
         ```bash
