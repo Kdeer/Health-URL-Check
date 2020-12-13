@@ -136,7 +136,7 @@ class FeatureGetter:
             if not check_is_same_origin(script.attrs['src'], self.url):
                 out_num += 1
         for link_element in link_elements:
-            if not check_is_same_origin(link_element.attrs['href'], self.url)
+            if not check_is_same_origin(link_element.attrs['href'], self.url):
                 out_num += 1
         rate = float(out_num) / total_num
         if rate < 0.17:
@@ -197,6 +197,24 @@ class FeatureGetter:
                     script.text.find('false'):
                 return -1
         return 1
+
+    def function22(self):
+        """
+        1.3.4. Using Pop-up Window
+
+        - scripts content window.open or window.prompt  => -1
+        - else => 1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        scripts = self.dom.find_all('script')
+        for script in scripts:
+            if script.text.find('window.open') >= 0 or \
+                    script.text.find('window.prompt'):
+                return -1
+        return 1
+        pass
 
     def function23(self):
         """
