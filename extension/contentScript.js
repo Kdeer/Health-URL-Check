@@ -52,6 +52,30 @@ async function asyncFilter(arr, predicate) {
     return arr.filter((_v, index) => results[index]);
 }
 
+/**
+ *
+ * @param element
+ * @param securityLevel     0 => security
+ *                          1 => warning
+ *                          2 => dangerous
+ */
+function changeAElementToTipUser(element, securityLevel) {
+    switch (securityLevel) {
+        case 0:
+            break
+        case 1:
+            element.title = "Warning: this url may be dangerous";
+            element.style = "border: solid #FFA500 1px";
+            break;
+        case 2:
+        default:
+            element.title = "Dangerous: this url is dangerous";
+            element.style = "border: solid red 2px";
+            break;
+
+    }
+}
+
 
 (async () => {
     // Get all a element in this page
@@ -96,32 +120,84 @@ async function asyncFilter(arr, predicate) {
     })
     const promises = [];
     tmpObj.forEach(item => {
-        const url = item.url;
         item.element.addEventListener('mouseover', () => {
             // mouse hover the a element
+            if (!item.isHover) {
+                item.isHover = true;
+                // do after hover
+                if (item.isSecurity !== undefined) {
+                    changeAElementToTipUser(item.element, item.isSecurity ? 0 : 2);
+                } else {
+                    item.isSecurity = true;
+                    changeAElementToTipUser(item.element, item.isSecurity ? 0 : 2);
 
+                    // First get feature local
+                    new FeatureGetter(item.url)
+                        .run()
+                        .then(res => {
+                            item.features = res;
+                            return Promise.resolve();
+                        })
+                        .catch(err => {
+                            item.features = {};
+                            return Promise.resolve();
+                        })
+                        .then(() => {
+                            // request server to judge whether this url is safe
+                            return fetch("http://localhost:5000/checkUrl", {
+                                method: 'POST',
+                                mode: 'cors',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    url: item.url,
+                                    features: item.features
+                                })
+                            })
+                        })
+                        .then(res => {
+                            return res.json()
+                        })
+                        .then(res => {
+                            item.isSecurity = res.data.security;
+                        })
+                        .catch(err => {
+                            console.log("====> ", err);
+                        })
+                }
+            }
         });
         item.element.addEventListener('mouseout', () => {
             // mouse leave the a element
+            if (!!item.isHover) {
+                item.isHover = false;
+            }
         });
-        promises.push(
-            new FeatureGetter(url)
-                .run()
-                .then(res => {
-                    item.features = res;
-                })
-                .catch(err => {
-                    item.features = {};
-                })
-        );
+
+        // promises.push(
+        //     new FeatureGetter(url)
+        //         .run()
+        //         .then(res => {
+        //             item.features = res;
+        //         })
+        //         .catch(err => {
+        //             item.features = {};
+        //         })
+        // );
     });
-    Promise.all(promises)
-        .then(res => {
-            console.log(tmpObj);
-        })
-        .catch(err => {
-            console.log(err);
-        })
+
+
+    // // First cal feature local
+    // Promise.all(promises)
+    //     .then(res => {
+    //         tmpObj.forEach(item => {
+    //
+    //         })
+    //     })
+    //     .catch(err => {
+    //         console.log(err);
+    //     })
 })();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
