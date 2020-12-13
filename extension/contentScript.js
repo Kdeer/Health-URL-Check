@@ -141,7 +141,7 @@ class FeatureGetter {
      */
     function1(url) {
         const urlObj = new URL(url);
-        const slices = urlObj.hostname.split(".");
+        const slices = urlObj.host.split(".");
         if (slices.length !== 4)
             return 1;
         for (let i = 0; i < slices.length; i++) {
@@ -531,6 +531,7 @@ class FeatureGetter {
                 });
             })
             .catch(err => {
+                console.log(" ==> " +err)
                 return Promise.resolve({
                     feature1: this.function1(this.url),
                     feature2: this.function2(this.url),

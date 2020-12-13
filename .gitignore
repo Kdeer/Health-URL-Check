@@ -1,1 +1,4 @@
 /server/.idea/
+/.idea/
+/extension/.idea/
+*.iml
