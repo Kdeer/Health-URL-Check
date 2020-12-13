@@ -52,7 +52,7 @@ def statistical_report(url):
     api_key = "enter the api"
     headers = {'Content-type': 'application/json'}
     r = requests.post('https://safebrowsing.googleapis.com/v4/threatMatches:find?', data=data,
-        params={'key': "AIzaSyC9bYu6ok7-sEpjZdd7kxG4ggZgE8CgkBo"},
+        params={'key': "enter the api"},
         headers=headers
     )
 
