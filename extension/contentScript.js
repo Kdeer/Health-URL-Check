@@ -97,6 +97,13 @@ async function asyncFilter(arr, predicate) {
     const promises = [];
     tmpObj.forEach(item => {
         const url = item.url;
+        item.element.addEventListener('mouseover', () => {
+            // mouse hover the a element
+
+        });
+        item.element.addEventListener('mouseout', () => {
+            // mouse leave the a element
+        });
         promises.push(
             new FeatureGetter(url)
                 .run()
@@ -135,7 +142,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.1.	Using the IP Address
+     * 1.1.1.    Using the IP Address
      *
      * 如果用IP地址代替URL中的域名，如“http://125.98.3.123/fake.html”，则判断为钓鱼网站。注意：IP地址甚至转换为十六进制代码，如：http://0x58.0xCC.0xCA.0x62/2/paypal.ca/index.html
      */
@@ -152,7 +159,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.2.	Long URL to Hide the Suspicious Part
+     * 1.1.2.    Long URL to Hide the Suspicious Part
      *
      * 如果URL的长度大于或等于54个字符，则该URL被归类为网络钓鱼
      */
@@ -166,7 +173,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.3.	Using URL Shortening Services “TinyURL”
+     * 1.1.3.    Using URL Shortening Services “TinyURL”
      *
      * 短网址（http重定向） -> -1
      * 否则 -> 1
@@ -180,7 +187,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.4.	URL’s having “@” Symbol
+     * 1.1.4.    URL’s having “@” Symbol
      *
      * url包含@ -> -1
      * 否则 -> 1
@@ -195,7 +202,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.5.	Redirecting using “//”
+     * 1.1.5.    Redirecting using “//”
      *
      * url中最后一次出现//的位置 > 7 -> -1
      * 否则 -> 1
@@ -210,7 +217,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.6.	Adding Prefix or Suffix Separated by (-) to the Domain
+     * 1.1.6.    Adding Prefix or Suffix Separated by (-) to the Domain
      *
      * 域名部分包含 - 符号 -> -1
      * 否则 -> 1
@@ -226,7 +233,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.7.	Sub Domain and Multi Sub Domains
+     * 1.1.7.    Sub Domain and Multi Sub Domains
      *
      * url中忽略 www 和 ccTLD之后，剩余部分：
      * 包含"."的个数 <= 1 -> 1
@@ -251,7 +258,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.10.	Favicon
+     * 1.1.10.    Favicon
      *
      * 从外部域加载Favicon -> -1
      * 否则 -> 1
@@ -274,7 +281,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.11.	Using Non-Standard Port
+     * 1.1.11.    Using Non-Standard Port
      *
      * [21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3389]
      * port属于首选端口 -> 1
@@ -290,7 +297,7 @@ class FeatureGetter {
     }
 
     /**
-     * 1.1.12.	The Existence of “HTTPS” Token in the Domain Part of the URL
+     * 1.1.12.    The Existence of “HTTPS” Token in the Domain Part of the URL
      *
      * url域名中出现http -> -1
      * 否则 -> 1
@@ -337,6 +344,27 @@ class FeatureGetter {
 
             }
         }
+
+        for (let i = 0; i < videos.length; i++) {
+            try {
+                if (!this.checkIsSameOrigin(videos.item(i).src, url)) {
+                    outLinksNum++;
+                }
+            } catch (err) {
+
+            }
+        }
+
+        for (let i = 0; i < audios.length; i++) {
+            try {
+                if (!this.checkIsSameOrigin(audios.item(i).src, url)) {
+                    outLinksNum++;
+                }
+            } catch (err) {
+
+            }
+        }
+
         const rate = outLinksNum / totalNum;
         if (rate < 0.22)
             return 1;
@@ -452,7 +480,7 @@ class FeatureGetter {
             return 1;
         const scripts = dom.getElementsByTagName("script");
         for (let i = 0; i < scripts.length; i++) {
-            if (scripts.item(i).innerHTML.indexOf("history.putState") > 0)
+            if (scripts.item(i).innerHTML.indexOf("history.putState") >= 0)
                 return -1;
         }
         return 1;
@@ -471,9 +499,29 @@ class FeatureGetter {
             return 1;
         const scripts = dom.getElementsByTagName("script");
         for (let i = 0; i < scripts.length; i++) {
-            if (scripts.item(i).innerHTML.indexOf("event.button == 2") > 0 &&
+            if (scripts.item(i).innerHTML.indexOf("event.button == 2") >= 0 &&
                 scripts.item(i).innerHTML.indexOf("false"))
                 return -1;
+        }
+        return 1;
+    }
+
+    /**
+     * 1.3.4. Using Pop-up Window
+     *
+     * scripts content window.open or window.prompt  => -1
+     * else => 1
+     * @param dom
+     */
+    function22(dom) {
+        if (dom == null)
+            return 1;
+        const scripts = dom.getElementsByTagName("script");
+        for (let i = 0; i < scripts.length; i++) {
+            if (scripts.item(i).innerHTML.indexOf("window.open") >= 0 ||
+                scripts.item(i).innerHTML.indexOf("window.prompt") >= 0) {
+                return -1;
+            }
         }
         return 1;
     }
@@ -527,11 +575,12 @@ class FeatureGetter {
                     feature16: this.function16(this.dom, this.url),
                     feature20: this.function20(this.dom),
                     feature21: this.function21(this.dom),
+                    feature22: this.function22(this.dom),
                     feature23: this.function23(this.dom),
                 });
             })
             .catch(err => {
-                console.log(" ==> " +err)
+                console.log(" ==> " + err)
                 return Promise.resolve({
                     feature1: this.function1(this.url),
                     feature2: this.function2(this.url),
