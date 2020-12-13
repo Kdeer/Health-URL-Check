@@ -161,6 +161,7 @@ function changeAElementToTipUser(element, securityLevel) {
                         })
                         .then(res => {
                             item.isSecurity = res.data.security;
+                            changeAElementToTipUser(item.element, item.isSecurity ? 0 : 2);
                         })
                         .catch(err => {
                             console.log("====> ", err);
@@ -174,30 +175,7 @@ function changeAElementToTipUser(element, securityLevel) {
                 item.isHover = false;
             }
         });
-
-        // promises.push(
-        //     new FeatureGetter(url)
-        //         .run()
-        //         .then(res => {
-        //             item.features = res;
-        //         })
-        //         .catch(err => {
-        //             item.features = {};
-        //         })
-        // );
     });
-
-
-    // // First cal feature local
-    // Promise.all(promises)
-    //     .then(res => {
-    //         tmpObj.forEach(item => {
-    //
-    //         })
-    //     })
-    //     .catch(err => {
-    //         console.log(err);
-    //     })
 })();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
