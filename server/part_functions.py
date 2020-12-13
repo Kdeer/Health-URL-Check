@@ -1,24 +1,30 @@
 import json
 import requests
 import re
-import csv
-import time
-import random
-from urllib.parse import urlparse, parse_qs, parse_qsl
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+
+
+def check_is_same_origin(url1, url2):
+    obj1, obj2 = urlparse(url1), urlparse(url2)
+    return obj1.hostname == obj2.hostname
 
 
 class FeatureGetter:
     def __init__(self, url):
         self.url = url
+        self.urlObj = urlparse(self.url)
+        try:
+            self.response = requests.get(url)
+            self.dom = BeautifulSoup(self.response.text)
+        except Exception as e:
+            self.dom = None
+            print(e)
 
     def run(self):
         requests.get(self.url)
 
-    def checkIsSameOrigin(self, url1, url2):
-        obj1, obj2 = urlparse(url1), urlparse(url2)
-        return obj1.hostname == obj2.hostname
-
-    def function3(self, url, response):
+    def function3(self):
         """
         1.1.3.	Using URL Shortening Services “TinyURL”
 
@@ -28,11 +34,183 @@ class FeatureGetter:
         :param response:
         :return:
         """
-        if len(url) < 20 and response.is_redirect:
+        if len(self.url) < 20 and self.response.is_redirect:
             return -1
         return 1
 
-    def function10(self, dom, url):
+    def function10(self):
+        """
+        1.1.10.	Favicon
+
+        - 从外部域加载Favicon -> -1
+        - 否则 -> 1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        links = self.dom.head.find_all('link')
+        for link_element in links:
+            if link_element.attrs['href'].find('icon') >= 0 and \
+                    not check_is_same_origin(link_element.attrs['href'], self.url):
+                return -1
+        return 1
+
+    def function13(self):
+        """
+        1.2.1. Request URL
+
+        外部对象（img, video, audio）中外链的占比
+        - [0, 22%) -> 1
+        - [22%, 61%) -> 0
+        - [61%, 100%] -> -1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        total_num, out_link_num = 0, 0
+        imgs = self.dom.find_all('img')
+        total_num += len(imgs)
+        videos = self.dom.find_all('video')
+        total_num += len(videos)
+        audios = self.dom.find_all('audio')
+        total_num += len(audios)
+
+        for img in imgs:
+            if not check_is_same_origin(img.attrs['src'], self.url):
+                out_link_num += 1
+        for video in videos:
+            if not check_is_same_origin(video.attrs['src'], self.url):
+                out_link_num += 1
+        for audio in audios:
+            if not check_is_same_origin(audio['src'], self.url):
+                out_link_num += 1
+
+        rate = float(out_link_num) / total_num
+        if rate < 0.22:
+            return 1
+        elif rate < 0.61:
+            return 0
+        else:
+            return -1
+
+    def function14(self):
+        """
+        1.2.2. URL of Anchor
+
+        所有a标签中，空标签的占比
+        - [0, 31%) => 1
+        - [31%, 67%) => 0
+        - [67%, 100%] => -1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        a_elements, anchor_num = self.dom.find_all('a'), 0
+        for a in a_elements:
+            if a.attrs['href'] == 'javascript:void(0)':
+                anchor_num += 1
+        rate = float(anchor_num) / len(a_elements)
+        if rate < 0.31:
+            return 1
+        elif rate < 0.67:
+            return 0
+        else:
+            return -1
+
+    def function15(self):
+        """
+        1.2.3. Links in <Meta>, <Script> and <Link> tags
+
+        <script>、<link>中包含的外链的比例
+        - [0, 17%) => 1
+        - [17%, 81%) => 0
+        - [81%, 100%] => -1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        script_elements = self.dom.find_all('script')
+        link_elements = self.dom.find_all('link')
+        total_num, out_num = len(script_elements) + len(link_elements), 0
+        for script in script_elements:
+            if not check_is_same_origin(script.attrs['src'], self.url):
+                out_num += 1
+        for link_element in link_elements:
+            if not check_is_same_origin(link_element.attrs['href'], self.url)
+                out_num += 1
+        rate = float(out_num) / total_num
+        if rate < 0.17:
+            return 1
+        elif rate < 0.81:
+            return 0
+        else:
+            return -1
+
+    def function16(self):
+        """
+        1.2.4. Server Form Handler (SFH)
+
+        - SHF is "about:blank" or "" => -1
+        - SFH is not same origin => 0
+        - else => -1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        forms = self.dom.find_all('form')
+        for form in forms:
+            if "about:blank".find(form.attrs['action']) >= 0:
+                return -1
+            elif check_is_same_origin(self.url, form.attrs['action']):
+                return 0
+        return 1
+
+    def function20(self):
+        """
+        1.3.2. Status Bar Customization
+
+        - Use history.putState to change display of url => -1
+        - else => 1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        scripts = self.dom.find_all('script')
+        for script in scripts:
+            if script.text.find('history.putState') >= 0:
+                return -1
+        return 1
+
+    def function21(self):
+        """
+        1.3.3. Disabling Right Click
+
+        - 禁用右键单击 => -1
+        - else => 1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        scripts = self.dom.find_all('script')
+        for script in scripts:
+            if script.text.find('event.button == 2') >= 0 and \
+                    script.text.find('false'):
+                return -1
+        return 1
+
+    def function23(self):
+        """
+        1.3.5. IFrame Redirection
+
+        - Use iframe => -1
+        - else => 1
+        :return:
+        """
+        if not self.dom:
+            return 1
+        if len(self.dom.find_all('iframe')) > 0:
+            return -1
+        return 1
 
 
 '''
