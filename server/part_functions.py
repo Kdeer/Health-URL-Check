@@ -29,19 +29,51 @@ class FeatureGetter:
     def run(self):
         requests.get(self.url)
 
-    def function3(self):
-        """
-        1.1.3.	Using URL Shortening Services “TinyURL”
-
-        - 短网址（http重定向） -> -1
-        - 否则 -> 1
-        :param url:
-        :param response:
-        :return:
-        """
-        if len(self.url) < 20 and self.response.is_redirect:
-            return -1
-        return 1
+    def call_function(self, function_name):
+        if function_name == "function8":
+            return self.function8()
+        elif function_name == "function9":
+            return self.function9()
+        elif function_name == "function10":
+            return self.function10()
+        elif function_name == "function13":
+            return self.function13()
+        elif function_name == "function14":
+            return self.function14()
+        elif function_name == "function15":
+            return self.function15()
+        elif function_name == "function16":
+            return self.function16()
+        elif function_name == "function17":
+            return self.function17()
+        elif function_name == "function18":
+            return self.function18()
+        elif function_name == "function19":
+            return self.function19()
+        elif function_name == "function20":
+            return self.function20()
+        elif function_name == "function21":
+            return self.function21()
+        elif function_name == "function22":
+            return self.function22()
+        elif function_name == "function23":
+            return self.function23()
+        elif function_name == "function24":
+            return self.function24()
+        elif function_name == "function25":
+            return self.function25()
+        elif function_name == "function26":
+            return self.function26()
+        elif function_name == "function27":
+            return self.function27()
+        elif function_name == "function28":
+            return self.function28()
+        elif function_name == "function29":
+            return self.function29()
+        elif function_name == "function30":
+            return self.function30()
+        else:
+            return 1
 
     def function8(self):
         """
@@ -204,6 +236,15 @@ class FeatureGetter:
             elif check_is_same_origin(self.url, form.attrs['action']):
                 return 0
         return 1
+
+    def function17(self):
+        """
+        1.2.5 mailTo or mail() function in the html page
+        if mail() or mailto: function exists => phishing => -1
+        if not => legitimate => 1
+        :return:
+        """
+        return mail_func(self.url)
 
     def function18(self):
         """
@@ -553,7 +594,6 @@ def mail_func(link):
         if mail_result:
             print(mail_result.group())
             return -1
-
     return 1
 
 
@@ -593,9 +633,10 @@ def domain_reg_len(link):
         # 1.2.6
         domain_url = 0
         if response.domain_name:
-            domain_name = response.domain_name.lower()
-            if type(domain_name) == list:
-                domain_name = domain_name[0].lower()
+            if type(response.domain_name) == list:
+                domain_name = response.domain_name[0].lower()
+            else:
+                domain_name = response.domain_name.lower()
             domain_in_url = re.search(domain_name, link.lower())
             if domain_in_url:
                 domain_url = 1
