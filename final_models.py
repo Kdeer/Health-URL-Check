@@ -35,13 +35,26 @@ pseudo 27 input parameters, orders are
 sudo_test_parameters = [[-1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 0,	1,	1,	1,	1,	-1, 1, -1, -1]]
 
 # the function takes 27 input parameters to yield either -1 phishing or 1 legitimate
-def svm_predict(parameters):
+
+# svm is not finalized yet
+def test_svm_predict(parameters):
     filename = 'finalized_svm_mode.sav'
     loaded_model = pickle.load(open(filename, 'rb'))
     test_result = loaded_model.predict(parameters)
-    print(test_result)
+    print(test_result[0])
     return test_result[0]
 
-svm_predict(sudo_test_parameters)
+
+test_svm_predict(sudo_test_parameters)
+
+# random forest is finalized
+def finalize_random_forest(parameters):
+    filename = 'finalized_rf_mode.sav'
+    loaded_model = pickle.load(open(filename, 'rb'))
+
+    test_result = loaded_model.predict(parameters)
+    print(test_result[0])
+    return test_result[0]
 
 
+finalize_random_forest(sudo_test_parameters)
