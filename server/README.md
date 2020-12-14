@@ -3,7 +3,7 @@
 - **Run server**
     - require
         ```bash
-        pip3 install Flask flask_cors numpy google whois lxml
+        pip3 install Flask flask_cors numpy google python-whois lxml requests
         ```
     - run
         ```bash
