@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify, redirect, url_for
 from flask_cors import *  # 导入模块
 import json
+import pickle
+import numpy
+from part_functions import FeatureGetter
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # 设置跨域
@@ -30,7 +34,10 @@ def redirect_test():
 def check_url():
     # Get json params here
     json_param = json.loads(request.data)
-    print(json_param)
+    print(json_param['url'])
+
+    fg = FeatureGetter(json_param['url'])
+
 
     # TODO check url here, and fill result to result dict
     result = {

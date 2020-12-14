@@ -3,6 +3,9 @@ import requests
 import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+import certifi
+import whois
+import datetime
 
 
 def check_is_same_origin(url1, url2):
@@ -14,8 +17,10 @@ class FeatureGetter:
     def __init__(self, url):
         self.url = url
         self.urlObj = urlparse(self.url)
+        self.domain_reg = domain_reg_len(self.url)
         try:
             self.response = requests.get(url)
+            self.redirect_times = len(self.response.history)
             self.dom = BeautifulSoup(self.response.text)
         except Exception as e:
             self.dom = None
@@ -37,6 +42,41 @@ class FeatureGetter:
         if len(self.url) < 20 and self.response.is_redirect:
             return -1
         return 1
+
+    def function8(self):
+        """
+        1.1.8 HTTPS
+        Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
+            for now, we take off the >= 1 years condition
+        using https and issuer is not trusted => suspicious => 0
+        otherwise => phising => -1
+        """
+        s = requests.Session()
+        if "http" not in self.url:
+            link = "https://" + self.url
+        else:
+            link_arr = self.url.split("://")
+            link = link_arr[0] + "s://" + link_arr[1]
+        try:
+            resposne = s.get(link, verify=certifi.where(), timeout=3)
+            if resposne.status_code:
+                return 1
+        except requests.exceptions.SSLError:
+            print("The ssl is not trusted")
+            return 0
+        except requests.exceptions.ConnectionError:
+            print("The site has no SSL")
+            return -1
+
+    def function9(self):
+        """
+        1.1.9 Domain Registration Length
+        Domain Expires in less than a year => phising => -1
+        otherwise => legitimate => 1
+        requires python-whois API: https://pypi.org/project/python-whois/
+        :return:
+        """
+        return self.domain_reg[2]
 
     def function10(self):
         """
@@ -165,6 +205,31 @@ class FeatureGetter:
                 return 0
         return 1
 
+    def function18(self):
+        """
+        1.2.6 Abnormal URL, this one will be done in 1.1.9
+        if the host name is not included in the URL => phising => -1
+        if the host name is included in the URL => legitimate => 1
+        :return:
+        """
+        return self.domain_reg[1]
+
+    def function19(self):
+        """
+        1.3.1 Website Forwarding
+        If the redirect page number is <= 1 -> legitmate => 1
+        If the redirect page is >= 2 and < 4 -> suspicious => 0
+        otherwise -> phishing => -1
+        """
+        if not self.redirect_times:
+            return 1
+        if self.redirect_times <= 1:
+            return 1
+        elif self.redirect_times < 4:
+            return 0
+        else:
+            return -1
+
     def function20(self):
         """
         1.3.2. Status Bar Customization
@@ -230,25 +295,80 @@ class FeatureGetter:
             return -1
         return 1
 
+    def function24(self):
+        """
+        1.4.1 Age of Domain
+        Age of Domain >= 6 month => legitimate => 1
+        otherwise => phishing => -1
+        :return:
+        """
+        return self.domain_reg[0]
 
-'''
-1.3.1 Website Forwarding
-If the redirect page number is <= 1 -> legitmate => 1
-If the redirect page is >= 2 and < 4 -> suspicious => 0
-otherwise -> phishing => -1
-'''
+    def function25(self):
+        """
+        1.4.2 DNS Record
+        if not found in DNS record -> phising => -1
+        otherwise -> legitimate => 1
+        :return:
+        """
+        return self.domain_reg[3]
 
+    def function26(self):
+        """
+        1.4.3 Website Traffic, use the rank from Alexa.com
+        if website Rank < 100,000 -> legitimate => 1
+        if website rank > 100,000 -> suspicious => 0
+        otherwise -> phish => -1
+        :return:
+        """
+        return website_rank(self.url)
 
-# not tested yet
-def web_forward(url):
-    s = requests.Session()
+    def function27(self):
+        """
+        1.4.4 PageRank
+        if pageRank < 0.2 -> phising => -1
+        otherwise legitimate => 1
+        Difficult to find the source to determine the page rank, will hold for now
+        :return:
+        """
+        pass
 
-    response = s.get(url)
-    print(response.history)
+    def function28(self):
+        """
+        1.4.5 Google Index, test whether the url is in google's index
+        if in the google index -> legitimate => 1
+        otherwise -> phishing => -1
 
+        library used: pip install google
+        usage: https://www.geeksforgeeks.org/performing-google-search-using-python-code/
+        :return:
+        """
+        return google_index(self.url)
 
-link = "www.wego-club.com"
-web_forward(link)
+    def function29(self):
+        """
+        1.4.6 Number of Links Pointing to Page
+        if link pointing to the webpage = 0 -> phising => -1
+        if link pointing to the webpage > 0 and <=2 -> suspicious = 0
+        otherwise -> legitimate => 1
+
+        problem: google's link operator is deprecated
+        https://www.openlinkprofiler.org/  is used as an alternative solution
+        :return:
+        """
+        return pointing_links(self.url)
+
+    def function30(self):
+        """
+        1.4.7 Statistical reports based feature
+        Something need to be changed
+
+        if host is found in google safe browse api or aa419 -> phising => -1
+        otherwise -> legitmate => 1
+        :return:
+        """
+        return statistical_report(self.url)
+
 
 '''
 1.4.7 Statistical reports based feature
@@ -462,13 +582,10 @@ timeout could be a trouble
 whois creation date will reset if a domain is expired and then claimed by someone else
 https://www.expireddomains.net/faq/#:~:text=If%20you%20register%20a%20Deleted,and%20a%20new%20Creation%20Date.&text=The%20domain%20will%20still%20be%20deleted%20and%20the%20Whois%20Record%20resets.
 '''
-import whois
-import datetime
 
 
 def domain_reg_len(link):
     try:
-
         response = whois.whois(link)
         # 1.4.2
         dns_record = 1
@@ -520,46 +637,12 @@ def domain_reg_len(link):
         domain_expire_days = -1
         dns_record = -1
         return domain_days, domain_url, domain_expire_days, dns_record
-        print("the link provided is not valid")
-
 
 # domain_reg_len('google.com')
 
 # domain_reg_len('renren.com')
 # domain_reg_len('www.stackoverflow.com')
 
-
-'''
-1.1.8 HTTPS 
-Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
-    for now, we take off the >= 1 years condition
-using https and issuer is not trusted => suspicious => 0
-otherwise => phising => -1
-'''
-
-import socket
-import certifi
-
-
-def verify_cert(link):
-    s = requests.Session()
-    if "http" not in link:
-        link = "https://" + link
-    else:
-        link_arr = link.split("://")
-        link = link_arr[0] + "s://" + link_arr[1]
-    print(link)
-
-    try:
-        resposne = s.get(link, verify=certifi.where(), timeout=3)
-        if resposne.status_code:
-            return 1
-    except requests.exceptions.SSLError:
-        print("The ssl is not trusted")
-        return 0
-    except requests.exceptions.ConnectionError:
-        print("The site has no SSL")
-        return -1
 
 # link = "https://www.aba.myspecies.info"
 # verify_ssl(link)

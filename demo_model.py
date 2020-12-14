@@ -1,10 +1,9 @@
-
 import pickle
 import numpy
 
 '''
 pseudo 27 input parameters, orders are
-1. having_IPhaving_IP_Address, 
+1. having_IPhaving_IP_Address,   => function 1 （1.1.1）
 2. URLURL_Length, 
 3. Shortining_Service, 
 4. having_At_Symbol,
