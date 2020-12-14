@@ -598,9 +598,7 @@ class FeatureGetter {
     }
 
     run() {
-        return fetch(this.url, {
-            'mode': 'no-cors'
-        })
+        return fetch(this.url, )
             .then(response => {
                 this.response = response;
                 return response.text()
@@ -634,7 +632,6 @@ class FeatureGetter {
                 });
             })
             .catch(err => {
-                console.log(" ==> " + err)
                 return Promise.resolve({
                     feature1: this.function1(this.url),
                     feature2: this.function2(this.url),
