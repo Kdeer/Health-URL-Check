@@ -132,7 +132,7 @@ function changeAElementToTipUser(element, securityLevel) {
                     changeAElementToTipUser(item.element, item.isSecurity ? 0 : 2);
 
                     // First get feature local
-                    new FeatureGetter(item.url)
+                    new FeatureGetter(item.url, location.href)
                         .run()
                         .then(res => {
                             item.features = res;
@@ -185,8 +185,9 @@ function changeAElementToTipUser(element, securityLevel) {
 
 class FeatureGetter {
 
-    constructor(url) {
+    constructor(url, originUrl) {
         this.url = url;
+        this.originUrl = originUrl
     }
 
     checkIsSameOrigin(url1, url2) {
@@ -598,9 +599,20 @@ class FeatureGetter {
     }
 
     run() {
-        return fetch(this.url, {
-            'mode': 'no-cors'
-        })
+        // 当https网站包含http链接，或者是外链时，本地只计算7个特征
+        if ((this.originUrl.startsWith('https://') && this.url.startsWith("http://")) || !this.checkIsSameOrigin(this.url, this.originUrl)) {
+            return Promise.resolve({
+                feature1: this.function1(this.url),
+                feature2: this.function2(this.url),
+                feature4: this.function4(this.url),
+                feature5: this.function5(this.url),
+                feature6: this.function6(this.url),
+                feature7: this.function7(this.url),
+                feature11: this.function11(this.url),
+                feature12: this.function12(this.url),
+            });
+        }
+        return fetch(this.url)
             .then(response => {
                 this.response = response;
                 return response.text()
@@ -634,7 +646,6 @@ class FeatureGetter {
                 });
             })
             .catch(err => {
-                console.log(" ==> " + err)
                 return Promise.resolve({
                     feature1: this.function1(this.url),
                     feature2: this.function2(this.url),
