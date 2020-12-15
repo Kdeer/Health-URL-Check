@@ -198,8 +198,10 @@ class FeatureGetter {
 
     /**
      * 1.1.1.    Using the IP Address
-     *
-     * 如果用IP地址代替URL中的域名，如“http://125.98.3.123/fake.html”，则判断为钓鱼网站。注意：IP地址甚至转换为十六进制代码，如：http://0x58.0xCC.0xCA.0x62/2/paypal.ca/index.html
+     *If an IP address is used as an alternative of the domain name in the URL, such as “http://125.98.3.123/fake.html”,
+     * it could be regarded as a phishing link
+     * If The Domain Part has an IP Address     => Phishing->-1
+     * Otherwise    => Legitimate->1
      */
     function1(url) {
         const urlObj = new URL(url);
@@ -215,8 +217,10 @@ class FeatureGetter {
 
     /**
      * 1.1.2.    Long URL to Hide the Suspicious Part
-     *
-     * 如果URL的长度大于或等于54个字符，则该URL被归类为网络钓鱼
+     *If the length of the URL is greater than or equal to 54 characters, the URL is classified as phishing
+     * URL's length <= 54   => Legitimate -> 1
+     * 54 < URL's length <= 75   => Suspicious -> 0
+     * otherwise   => Phishing->-1
      */
     function2(url) {
         if (url.length <= 54)
@@ -230,8 +234,8 @@ class FeatureGetter {
     /**
      * 1.1.3.    Using URL Shortening Services “TinyURL”
      *
-     * 短网址（http重定向） -> -1
-     * 否则 -> 1
+     * Short URL (http redirect) => Phishing -> -1
+     * otherwise => Legitimate -> 1
      * @param response
      */
     function3(response) {
@@ -244,8 +248,8 @@ class FeatureGetter {
     /**
      * 1.1.4.    URL’s having “@” Symbol
      *
-     * url包含@ -> -1
-     * 否则 -> 1
+     * url has @ symbol      => Phishing -> -1
+     * therwise     => Legitimate -> 1
      * @param url
      * @returns {number}
      */
@@ -259,8 +263,8 @@ class FeatureGetter {
     /**
      * 1.1.5.    Redirecting using “//”
      *
-     * url中最后一次出现//的位置 > 7 -> -1
-     * 否则 -> 1
+     * ThePosition of the Last Occurrence of "//\" " in the URL > 7     => Phishing -> -1
+     * therwise     => Legitimate -> 1
      * @param url
      * @returns {number}
      */
@@ -274,8 +278,8 @@ class FeatureGetter {
     /**
      * 1.1.6.    Adding Prefix or Suffix Separated by (-) to the Domain
      *
-     * 域名部分包含 - 符号 -> -1
-     * 否则 -> 1
+     * Domain Name Part Includes (-) Symbol => Phishing -> -1
+     * otherwise     => Legitimate ->1
      * @param url
      * @returns {number}
      */
@@ -290,10 +294,10 @@ class FeatureGetter {
     /**
      * 1.1.7.    Sub Domain and Multi Sub Domains
      *
-     * url中忽略 www 和 ccTLD之后，剩余部分：
-     * 包含"."的个数 <= 1 -> 1
-     * 包含"."的个数 = 2 -> 0
-     * 包含"."的个数 > 2 -> -1
+     * After ignoring www and ccTLD in the url, the rest part:
+     * Dots In Domain Part = 1    => Legitimate -> 1
+     * Dots In Domain Part = 2    => Suspicious -> 0
+     * Otherwise    => Phishing -> -1
      * @param url
      */
     function7(url) {
@@ -315,8 +319,8 @@ class FeatureGetter {
     /**
      * 1.1.10.    Favicon
      *
-     * 从外部域加载Favicon -> -1
-     * 否则 -> 1
+     *  If the favicon is loaded from a domain other than that shown in the address bar => Phishing -> -1
+     *  Otherwise     => Legitimate ->1
      * @param dom
      * @param url
      * @returns {number}
@@ -339,8 +343,8 @@ class FeatureGetter {
      * 1.1.11.    Using Non-Standard Port
      *
      * [21, 22, 23, 80, 443, 445, 1433, 1521, 3306, 3389]
-     * port属于首选端口 -> 1
-     * 否则 -> 1
+     * port is the preferred port    => Phishing -> -1
+     *  otherwise     => Legitimate ->1
      * @param url
      */
     function11(url) {
@@ -354,8 +358,8 @@ class FeatureGetter {
     /**
      * 1.1.12.    The Existence of “HTTPS” Token in the Domain Part of the URL
      *
-     * url域名中出现http -> -1
-     * 否则 -> 1
+     * Using HTTP Token in Domain Part of The URL   => Phishing -> -1
+     *  otherwise     => Legitimate ->1
      * @param url
      * @returns {number}
      */
@@ -370,10 +374,11 @@ class FeatureGetter {
     /**
      * 1.2.1. Request URL
      *
-     * 外部对象（img, video, audio）中外链的占比
-     * [0, 22%) -> 1
-     * [22%, 61%) -> 0
-     * [61%, 100%] -> -1
+     * the % of external objects contained within a webpage such as images, videos and sounds are loaded from
+     * another domain
+     * % of Request URL <22%   => Legitimate -> 1
+     * % of Request URL≥22% and 61%    => Suspicious -> 0
+     * Otherwise    => Phishing -> -1
      * @param dom
      * @param url
      * @returns {number}
@@ -431,11 +436,10 @@ class FeatureGetter {
 
     /**
      * 1.2.2. URL of Anchor
-     *
-     * 所有a标签中，空标签的占比
-     * [0, 31%) => 1
-     * [31%, 67%) => 0
-     * [67%, 100%] => -1
+     *If the <a> tags and the website have different domain names or does not link to any webpage
+     * % of URL Of Anchor [0, 31%) => Legitimate -> 1
+     * % of URL Of Anchor [31%, 67%) => Suspicious -> 0
+     * Otherwise => Phishing -> -1
      * @param dom
      * @returns {number}
      */
@@ -461,10 +465,10 @@ class FeatureGetter {
     /**
      * 1.2.3. Links in <Meta>, <Script> and <Link> tags
      *
-     * <script>、<link>中包含的外链的比例
-     * [0, 17%) => 1
-     * [17%, 81%) => 0
-     * [81%, 100%] => -1
+     * Ratio of external links included in < SCRIPT > , < Link >
+     * % of Links in "<Meta>","<Script>" and "<"Link> is [0, 17%) => Legitimate -> 1
+     * % of Links in <Meta>","<Script>" and "<"Link> is [17%, 81%) => Suspicious -> 0
+     * Otherwise => Phishing -> -1
      * @param dom
      * @param url
      * @returns {number}
@@ -501,9 +505,9 @@ class FeatureGetter {
     /**
      * 1.2.4. Server Form Handler (SFH)
      *
-     * SHF is "about:blank" or "" => -1
-     * SFH is not same origin => 0
-     * else => -1
+     * SHF is "about:blank" or "" => Phishing -> -1
+     * SFH is not same origin => Suspicious -> 0
+     * Otherwise => Legitimate -> 1
      * @param dom
      * @param url
      * @returns {number}
@@ -525,8 +529,8 @@ class FeatureGetter {
     /**
      * 1.3.2. Status Bar Customization
      *
-     * Use history.putState to change display of url => -1
-     * else => 1
+     * Use history.putState to change display of url => Phishing -> -1
+     * Otherwise => Legitimate -> 1
      * @param dom
      * @returns {number}
      */
@@ -544,8 +548,8 @@ class FeatureGetter {
     /**
      * 1.3.3. Disabling Right Click
      *
-     * 禁用右键单击 => -1
-     * else => 1
+     * Right Click Disabled => Phishing -> -1
+     * Otherwise => Legitimate -> 1
      * @param dom
      * @returns {number}
      */
@@ -564,8 +568,8 @@ class FeatureGetter {
     /**
      * 1.3.4. Using Pop-up Window
      *
-     * scripts content window.open or window.prompt  => -1
-     * else => 1
+     * scripts content window.open or window.prompt  => Phishing -> -1
+     * Otherwise => Legitimate -> 1
      * @param dom
      */
     function22(dom) {
@@ -584,8 +588,8 @@ class FeatureGetter {
     /**
      * 1.3.5. IFrame Redirection
      *
-     * Use iframe => -1
-     * else => 1
+     * Use iframe => Phishing -> -1
+     * Otherwise => Legitimate -> 1
      * @param dom
      * @returns {number}
      */
@@ -599,7 +603,7 @@ class FeatureGetter {
     }
 
     run() {
-        // 当https网站包含http链接，或者是外链时，本地只计算7个特征
+        //When an HTTPS site contains an HTTP link, or when the URL is an external link, only 7 features are counted in front-end
         if ((this.originUrl.startsWith('https://') && this.url.startsWith("http://")) || !this.checkIsSameOrigin(this.url, this.originUrl)) {
             return Promise.resolve({
                 feature1: this.function1(this.url),

@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, redirect, url_for
-from flask_cors import *  # 导入模块
+from flask_cors import *  # import flask_cors moudle
 import json
 from part_functions import FeatureGetter
 from final_model import get_voting_result
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)  # 设置跨域
+CORS(app, supports_credentials=True)  # set cross-domain
 
 
 @app.route("/redirect_test4", methods=['GET'])
