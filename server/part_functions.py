@@ -79,7 +79,7 @@ class FeatureGetter:
         """
         1.1.8 HTTPS
         Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
-            for now, we take off the >= 1 years condition
+        for now, we take off the >= 1 years condition
         using https and issuer is not trusted => suspicious => 0
         otherwise => phising => -1
         """
@@ -113,9 +113,8 @@ class FeatureGetter:
     def function10(self):
         """
         1.1.10.	Favicon
-
-        - 从外部域加载Favicon -> -1
-        - 否则 -> 1
+        If the favicon is loaded from a domain other than that shown in the address bar => Phishing -> -1
+        Otherwise     => Legitimate ->1
         :return:
         """
         if not self.dom:
@@ -130,11 +129,11 @@ class FeatureGetter:
     def function13(self):
         """
         1.2.1. Request URL
-
-        外部对象（img, video, audio）中外链的占比
-        - [0, 22%) -> 1
-        - [22%, 61%) -> 0
-        - [61%, 100%] -> -1
+        the % of external objects contained within a webpage such as images, videos and sounds are loaded from
+        another domain
+        % of Request URL <22%   => Legitimate -> 1
+        % of Request URL≥22% and 61%    => Suspicious -> 0
+        Otherwise    => Phishing -> -1
         :return:
         """
         if not self.dom:
@@ -168,11 +167,10 @@ class FeatureGetter:
     def function14(self):
         """
         1.2.2. URL of Anchor
-
-        所有a标签中，空标签的占比
-        - [0, 31%) => 1
-        - [31%, 67%) => 0
-        - [67%, 100%] => -1
+        If the <a> tags and the website have different domain names or does not link to any webpage
+        % of URL Of Anchor [0, 31%) => Legitimate -> 1
+        % of URL Of Anchor [31%, 67%) => Suspicious -> 0
+        Otherwise => Phishing -> -1
         :return:
         """
         if not self.dom:
@@ -192,11 +190,10 @@ class FeatureGetter:
     def function15(self):
         """
         1.2.3. Links in <Meta>, <Script> and <Link> tags
-
-        <script>、<link>中包含的外链的比例
-        - [0, 17%) => 1
-        - [17%, 81%) => 0
-        - [81%, 100%] => -1
+        Ratio of external links included in < SCRIPT > , < Link >
+        % of Links in "<Meta>","<Script>" and "<"Link> is [0, 17%) => Legitimate -> 1
+        % of Links in <Meta>","<Script>" and "<"Link> is [17%, 81%) => Suspicious -> 0
+        Otherwise => Phishing -> -1
         :return:
         """
         if not self.dom:
@@ -221,10 +218,9 @@ class FeatureGetter:
     def function16(self):
         """
         1.2.4. Server Form Handler (SFH)
-
-        - SHF is "about:blank" or "" => -1
-        - SFH is not same origin => 0
-        - else => -1
+        SHF is "about:blank" or "" => Phishing -> -1
+        SFH is not same origin => Suspicious -> 0
+        Otherwise => Legitimate -> 1
         :return:
         """
         if not self.dom:
@@ -274,9 +270,8 @@ class FeatureGetter:
     def function20(self):
         """
         1.3.2. Status Bar Customization
-
-        - Use history.putState to change display of url => -1
-        - else => 1
+        Use history.putState to change display of url => Phishing -> -1
+        Otherwise => Legitimate -> 1
         :return:
         """
         if not self.dom:
@@ -290,9 +285,8 @@ class FeatureGetter:
     def function21(self):
         """
         1.3.3. Disabling Right Click
-
-        - 禁用右键单击 => -1
-        - else => 1
+        Right Click Disabled => Phishing -> -1
+        Otherwise => Legitimate -> 1
         :return:
         """
         if not self.dom:
@@ -307,9 +301,8 @@ class FeatureGetter:
     def function22(self):
         """
         1.3.4. Using Pop-up Window
-
-        - scripts content window.open or window.prompt  => -1
-        - else => 1
+        scripts content window.open or window.prompt  => Phishing -> -1
+        Otherwise => Legitimate -> 1
         :return:
         """
         if not self.dom:
@@ -325,9 +318,8 @@ class FeatureGetter:
     def function23(self):
         """
         1.3.5. IFrame Redirection
-
-        - Use iframe => -1
-        - else => 1
+        Use iframe => Phishing -> -1
+        Otherwise => Legitimate -> 1
         :return:
         """
         if not self.dom:
