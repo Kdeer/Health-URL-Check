@@ -36,16 +36,24 @@ sudo_test_parameters = [[-1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1
 
 # the function takes 27 input parameters to yield either -1 phishing or 1 legitimate
 
-# svm is not finalized yet
-def test_svm_predict(parameters):
+# voting system
+
+
+
+def finalized_backp_predict(parameters):
+    filename = 'finalized_backp_mode.sav'
+    loaded_model = pickle.load(open(filename, 'rb'))
+    test_result = loaded_model.predict(parameters)
+    print("backp result:", test_result[0])
+    return test_result[0]
+
+def finalized_svm_predict(parameters):
     filename = 'finalized_svm_mode.sav'
     loaded_model = pickle.load(open(filename, 'rb'))
     test_result = loaded_model.predict(parameters)
-    print(test_result[0])
+    print("svm result:", test_result[0])
     return test_result[0]
 
-
-test_svm_predict(sudo_test_parameters)
 
 # random forest is finalized
 def finalize_random_forest(parameters):
@@ -53,8 +61,22 @@ def finalize_random_forest(parameters):
     loaded_model = pickle.load(open(filename, 'rb'))
 
     test_result = loaded_model.predict(parameters)
-    print(test_result[0])
+    print("RF result:", test_result[0])
     return test_result[0]
 
 
-finalize_random_forest(sudo_test_parameters)
+def get_voting_result(parameters):
+
+    backp_test_result = finalized_backp_predict(parameters)
+    svm_test_result = finalized_svm_predict(parameters)
+    rf_test_result = finalized_svm_predict(parameters)
+
+    if backp_test_result == svm_test_result or backp_test_result == rf_test_result:
+        return backp_test_result
+    else:
+        return svm_test_result
+
+
+result = get_voting_result(sudo_test_parameters)
+print("voting result:", result)
+
