@@ -21,7 +21,7 @@ class FeatureGetter:
         try:
             self.response = requests.get(url)
             self.redirect_times = len(self.response.history)
-            self.dom = BeautifulSoup(self.response.text)
+            self.dom = BeautifulSoup(self.response.text, 'lxml')
         except Exception as e:
             self.dom = None
             print(e)

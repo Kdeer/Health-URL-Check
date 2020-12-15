@@ -1,4 +1,3 @@
-
 import pickle
 import numpy
 
@@ -32,12 +31,12 @@ pseudo 27 input parameters, orders are
 26 Google_Index, 
 27. Statistical_report
 '''
-sudo_test_parameters = [[-1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 0,	1,	1,	1,	1,	-1, 1, -1, -1]]
+sudo_test_parameters = [[-1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, -1, 1, -1, -1, -1, 0, 1, 1, 1, 1, -1, 1, -1, -1]]
+
 
 # the function takes 27 input parameters to yield either -1 phishing or 1 legitimate
 
 # voting system
-
 
 
 def finalized_backp_predict(parameters):
@@ -46,6 +45,7 @@ def finalized_backp_predict(parameters):
     test_result = loaded_model.predict(parameters)
     print("backp result:", test_result[0])
     return test_result[0]
+
 
 def finalized_svm_predict(parameters):
     filename = 'finalized_svm_mode.sav'
@@ -66,7 +66,6 @@ def finalize_random_forest(parameters):
 
 
 def get_voting_result(parameters):
-
     backp_test_result = finalized_backp_predict(parameters)
     svm_test_result = finalized_svm_predict(parameters)
     rf_test_result = finalized_svm_predict(parameters)
@@ -79,4 +78,3 @@ def get_voting_result(parameters):
 
 result = get_voting_result(sudo_test_parameters)
 print("voting result:", result)
-
