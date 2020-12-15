@@ -78,6 +78,7 @@ def check_url():
     # call ML code
     test_result = get_voting_result([parameters])
 
+
     security = False
     if test_result == 1:
         security = True

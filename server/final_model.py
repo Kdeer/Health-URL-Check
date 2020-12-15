@@ -68,13 +68,15 @@ def finalize_random_forest(parameters):
 def get_voting_result(parameters):
     backp_test_result = finalized_backp_predict(parameters)
     svm_test_result = finalized_svm_predict(parameters)
-    rf_test_result = finalized_svm_predict(parameters)
+    rf_test_result = finalize_random_forest(parameters)
 
     if backp_test_result == svm_test_result or backp_test_result == rf_test_result:
+        print("Voting Result:", backp_test_result)
         return backp_test_result
     else:
+        print("Voting Result:", svm_test_result)
         return svm_test_result
 
 
-result = get_voting_result(sudo_test_parameters)
-print("voting result:", result)
+# result = get_voting_result(sudo_test_parameters)
+# print("voting result:", result)
