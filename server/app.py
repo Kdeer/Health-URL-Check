@@ -1,9 +1,8 @@
 from flask import Flask, request, jsonify, redirect, url_for
 from flask_cors import *  # import flask_cors moudle
 import json
-import pickle
-import numpy
 from part_functions import FeatureGetter
+from final_model import get_voting_result
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # set cross-domain
@@ -76,13 +75,11 @@ def check_url():
             myFeatures[feature] = fg.call_function(feature)
         parameters.append(myFeatures[feature])
 
-    # call svm ML code
-    filename = 'finalized_svm_mode.sav'
-    loaded_model = pickle.load(open(filename, 'rb'))
-    test_result = loaded_model.predict([parameters])
+    # call ML code
+    test_result = get_voting_result([parameters])
 
     security = False
-    if test_result[0] == 1:
+    if test_result == 1:
         security = True
     result = {
         "code": 0,
