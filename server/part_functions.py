@@ -76,6 +76,7 @@ class FeatureGetter:
             return 1
 
     def function8(self):
+        return 1
         """
         1.1.8 HTTPS
         Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
@@ -117,7 +118,7 @@ class FeatureGetter:
         Otherwise     => Legitimate ->1
         :return:
         """
-        if not self.dom:
+        if not self.dom or not self.dom.head:
             return 1
         links = self.dom.head.find_all('link')
         for link_element in links:
@@ -178,7 +179,8 @@ class FeatureGetter:
             return 1
         a_elements, anchor_num = self.dom.find_all('a'), 0
         for a in a_elements:
-            if a.attrs['href'] == 'javascript:void(0)':
+            print(a.attrs)
+            if 'href' in a.attrs and a.attrs['href'] == 'javascript:void(0)':
                 anchor_num += 1
         if len(a_elements) == 0:
             return 1
@@ -205,10 +207,10 @@ class FeatureGetter:
         link_elements = self.dom.find_all('link')
         total_num, out_num = len(script_elements) + len(link_elements), 0
         for script in script_elements:
-            if not check_is_same_origin(script.attrs['src'], self.url):
+            if 'src' in script.attrs and not check_is_same_origin(script.attrs['src'], self.url):
                 out_num += 1
         for link_element in link_elements:
-            if not check_is_same_origin(link_element.attrs['href'], self.url):
+            if 'href' in link_element.attrs and not check_is_same_origin(link_element.attrs['href'], self.url):
                 out_num += 1
         if total_num == 0:
             return 1
