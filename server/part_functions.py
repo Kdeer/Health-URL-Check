@@ -76,7 +76,6 @@ class FeatureGetter:
             return 1
 
     def function8(self):
-        return 1
         """
         1.1.8 HTTPS
         Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
