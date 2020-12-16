@@ -76,6 +76,7 @@ class FeatureGetter:
             return 1
 
     def function8(self):
+        return 1
         """
         1.1.8 HTTPS
         Use https and Issuer is trusted and age of certificate >= 1 years => legitimate 1
@@ -155,7 +156,8 @@ class FeatureGetter:
         for audio in audios:
             if not check_is_same_origin(audio['src'], self.url):
                 out_link_num += 1
-
+        if total_num == 0:
+            return 1
         rate = float(out_link_num) / total_num
         if rate < 0.22:
             return 1
@@ -179,6 +181,8 @@ class FeatureGetter:
         for a in a_elements:
             if a.attrs['href'] == 'javascript:void(0)':
                 anchor_num += 1
+        if len(a_elements) == 0:
+            return 1
         rate = float(anchor_num) / len(a_elements)
         if rate < 0.31:
             return 1
@@ -207,6 +211,8 @@ class FeatureGetter:
         for link_element in link_elements:
             if not check_is_same_origin(link_element.attrs['href'], self.url):
                 out_num += 1
+        if total_num == 0:
+            return 1
         rate = float(out_num) / total_num
         if rate < 0.17:
             return 1
