@@ -29,48 +29,48 @@ class FeatureGetter:
     def run(self):
         requests.get(self.url)
 
-    def call_function(self, function_name):
-        if function_name == "function8":
+    def call_function(self, feature_name):
+        if feature_name == "feature8":
             return self.function8()
-        elif function_name == "function9":
+        elif feature_name == "feature9":
             return self.function9()
-        elif function_name == "function10":
+        elif feature_name == "feature10":
             return self.function10()
-        elif function_name == "function13":
+        elif feature_name == "feature13":
             return self.function13()
-        elif function_name == "function14":
+        elif feature_name == "feature14":
             return self.function14()
-        elif function_name == "function15":
+        elif feature_name == "feature15":
             return self.function15()
-        elif function_name == "function16":
+        elif feature_name == "feature16":
             return self.function16()
-        elif function_name == "function17":
+        elif feature_name == "feature17":
             return self.function17()
-        elif function_name == "function18":
+        elif feature_name == "feature18":
             return self.function18()
-        elif function_name == "function19":
+        elif feature_name == "feature19":
             return self.function19()
-        elif function_name == "function20":
+        elif feature_name == "feature20":
             return self.function20()
-        elif function_name == "function21":
+        elif feature_name == "feature21":
             return self.function21()
-        elif function_name == "function22":
+        elif feature_name == "feature22":
             return self.function22()
-        elif function_name == "function23":
+        elif feature_name == "feature23":
             return self.function23()
-        elif function_name == "function24":
+        elif feature_name == "feature24":
             return self.function24()
-        elif function_name == "function25":
+        elif feature_name == "feature25":
             return self.function25()
-        elif function_name == "function26":
+        elif feature_name == "feature26":
             return self.function26()
-        elif function_name == "function27":
+        elif feature_name == "feature27":
             return self.function27()
-        elif function_name == "function28":
+        elif feature_name == "feature28":
             return self.function28()
-        elif function_name == "function29":
+        elif feature_name == "feature29":
             return self.function29()
-        elif function_name == "function30":
+        elif feature_name == "feature30":
             return self.function30()
         else:
             return 1
